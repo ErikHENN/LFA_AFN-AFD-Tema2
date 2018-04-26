@@ -65,22 +65,48 @@ def creeazaTabelAutomat(AFN = Automat):
     #Marchez toate nodurile ca nevizitate
     for nod in lista_noduri:
         table['@'][nod] = False
+
     #Generez nodurile combinate
     for litera in list(AFN.alfabet):
         for nod in lista_noduri:
             tranzitie_noua = []
             lista_de_tranzitii = table[litera][nod]
-            if (type(lista_de_tranzitii) is list and len(lista_de_tranzitii) > 1) and table['@'][nod] is False:
-                for tranzitie in lista_de_tranzitii:
-                    for c in tranzitie:
-                        tranzitie_noua = reunesteListe(tranzitie_noua, table[litera][c])
-                eticheta_tranzitie_noua = ''.join(lista_de_tranzitii)
-                lista_noduri.append(eticheta_tranzitie_noua)
-                table.loc[eticheta_tranzitie_noua] = False
+            if table['@'][nod] is False or table[litera][nod] is False:
+                if lista_de_tranzitii is not False:
+                    if len(lista_de_tranzitii) > 1:
+                        eticheta_tranzitie_noua = ''.join(lista_de_tranzitii)
+                    else:
+                        eticheta_tranzitie_noua = lista_de_tranzitii[0]
+                else:
+                    eticheta_tranzitie_noua = nod
+                for c in eticheta_tranzitie_noua:
+                    tranzitie_noua = reunesteListe(tranzitie_noua, table[litera][c])
+                    table['@'][c] = True
+                if eticheta_tranzitie_noua not in lista_noduri:
+                    lista_noduri.append(eticheta_tranzitie_noua)
+                if eticheta_tranzitie_noua not in table.index:
+                    table.loc[eticheta_tranzitie_noua] = False
                 table.loc[eticheta_tranzitie_noua][litera] = tranzitie_noua
-                print(table)
+                table['@'][nod] = True
+    #Verific si completez golurile tabelului in caz ca exista
+    for litera in list(AFN.alfabet):
+        for nod in lista_noduri:
+            tranzitie_noua = []
+            if table[litera][nod] is False:
+                for c in nod:
+                    tranzitie_noua = reunesteListe(tranzitie_noua, table[litera][c])
+                table.loc[nod][litera] = tranzitie_noua
+
     return table
 
+
+
+def listeazaStariFinale(AFN = Automat):
+    lista_stari_finale = []
+    for i in AFN.lista_noduri:
+        if AFN.lista_noduri[i].stare is 'f':
+            lista_stari_finale.append(i)
+    return lista_stari_finale
 
 def reunesteListe(lista1, lista2):
     return list(set().union(lista1, lista2))
