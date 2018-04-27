@@ -69,6 +69,14 @@ def listaNoduriPeLitera(litera, nod = Nod):
         indexNod = indexNod + 1
     return lista
 
+def stareTranzitie(nod, AFN):
+    stare = 'intermediar'
+    for c in nod:
+        if AFN.lista_noduri[int(c)].stare == 'initial':
+            stare = AFN.lista_noduri[int(c)].stare
+        if AFN.lista_noduri[int(c)].stare == 'f':
+            stare = AFN.lista_noduri[int(c)].stare
+    return stare
 '''
 @AFN - Reprezinta AFN-ul pentru care creez automatul. 
 Ii setez default value ca fiind un obiect al clasei automat deoarece vreau sa-l fortez sa foloseasca acest tip de date
@@ -150,38 +158,33 @@ def creeazaTabelAutomat(AFN = Automat):
 @AFD - AFD-ul rezultat
 Functia interpreteaza tabelul si il transpune, creand AFD-ul in formatul definit la citire
 '''
+
 def conversie(AFN = Automat, AFD = Automat):
     global lista_noduri
     table = creeazaTabelAutomat(AFN)
+    print (table)
+    print()
     AFD.nr_noduri = len(table.index)
     AFD.alfabet = AFN.alfabet
+    ok = True
+    for litera in list(AFN.alfabet):
+        tranzitie = lista_noduri[0]
+        tranzitie_legatura = listToString(table[litera][tranzitie])
+        while tranzitie != tranzitie_legatura:
+            print (tranzitie + " -> ( " + litera + " )" + tranzitie_legatura + " Stare = " + stareTranzitie(tranzitie, AFN))
+            tranzitie = tranzitie_legatura
+            tranzitie_legatura = listToString(table[litera][tranzitie])
+        else:
+            print(tranzitie + " -> ( " + litera + " )" + tranzitie_legatura  + " Stare = " + stareTranzitie(tranzitie, AFN))
+            if lista_noduri.index(tranzitie) + 1 < len(lista_noduri):
+                tranzitie = str(lista_noduri.index(tranzitie) + 1)
+            tranzitie_legatura = listToString(table[litera][tranzitie])
+        while lista_noduri.index(tranzitie) + 1 < len(lista_noduri):
+            if tranzitie == tranzitie_legatura:
+                print(tranzitie + " -> ( " + litera + " )" + tranzitie_legatura  + " Stare = " + stareTranzitie(tranzitie, AFN))
+                tranzitie = lista_noduri[lista_noduri.index(tranzitie) + 1]
+            tranzitie_legatura = listToString(table[litera][tranzitie])
 
-    for i in table.index:
-        legatura = []
-        litera_acceptata = []
-        eticheta = i
-        print("ET = " + eticheta)
-        nr_muchii = 0
-
-        #Pentru nodul i calculez lungimea fiecarei liste de pe coloanele literelor
-        for litera in list(AFD.alfabet):
-            nr_muchii = nr_muchii + len(table[litera][i])
-            for j in table[litera][i]:
-                if AFN.lista_noduri[int(j)].stare is 'f':
-                    stare = 'f'
-                elif AFN.lista_noduri[int(j)].stare == 'initiala':
-                    stare = 'initiala'
-                else:
-                    stare = 'intermediara'
-
-        for j in range(int(nr_muchii)):
-            for litera in list(AFD.alfabet):
-                legatura.append(listToString(table[litera][i]))
-                litera_acceptata.append(litera)
-        M = Muchie(legatura, litera_acceptata)
-        N = Nod(eticheta, stare, nr_muchii, M)
-        AFD.adauga_nod(N)
-    print (table)
 
 '''
 Afisez AFD-ul nou dupa urmatorul model:
@@ -191,7 +194,12 @@ Afisez AFD-ul nou dupa urmatorul model:
 - Legaturile automatului in format (nod_de_legatura, litera_acceptata_pe_legatura)
 - Despart fiecare nod prin "------------" pentru claritate la citirea rezultatului
 '''
-def afisare(AFD = Automat):
+
+'''
+def conversie(AFN = Automat, AFD = Automat):
+    table = creeazaTabelAutomat(AFN)
+    for i in li
+    
     nrn = AFD.nr_noduri
     for i in range(int(nrn)):
         print ("Eticheta nod: " + str(AFD.lista_noduri[i].eticheta))
@@ -203,7 +211,28 @@ def afisare(AFD = Automat):
             # leg.append = "ID nod cu care se leaga nodul i"
             print("(" + AFD.lista_noduri[i].Muchie.legatura[j] + ", " + AFD.lista_noduri[i].Muchie.litera[j] + ")")
         print("------------")
+        '''
 
+
+
+def verifica_cv(AFD, cuvant):
+    ok = 1
+    nod = 0
+    for c in cuvant:
+        lista_ponderi = AFD.lista_noduri[nod].Muchie.litera
+        lista_legaturi = AFD.lista_noduri[nod].Muchie.legatura
+        if c in lista_ponderi:
+            indexMuchie = lista_ponderi.index(c)
+            nod = int(lista_legaturi[indexMuchie])
+        else:
+            ok = 0
+            break
+    if ok == 1 and AFD.lista_noduri[nod].stare is 'f':
+        print ("Cuvant acceptat")
+    elif ok == 0 and AFD.lista_noduri[nod].stare is 'f' and cuvant is '':
+        print ("Cuvant acceptat")
+    else:
+        print ("Cuvant respins")
 '''
 # Functia main
 # 1) Deschid fisierul afn.in
@@ -214,9 +243,17 @@ def afisare(AFD = Automat):
 
 
 if __name__ == "__main__":
-    file = open("afn.in", "r")
-    AFN = Automat("ab")
-    AFD = Automat("ab")
-    citire_automat(AFN)
-    conversie(AFN, AFD)
-    afisare(AFD)
+    optiune = input ("Alegeti optiunea [1 = Verifica cuvant AFD / 2 = Transformare AFN - AFD] : ")
+    if int(optiune) == 1:
+        file = open("afd.in", "r")
+        cuvant = input ("Cuvantul de verificat este: ")
+        AFD = Automat("abc")
+        citire_automat(AFD)
+        verifica_cv(AFD, cuvant)
+
+    if int(optiune) == 2:
+        file = open("afn.in", "r")
+        AFN = Automat("ab")
+        AFD = Automat("ab")
+        citire_automat(AFN)
+        conversie(AFN, AFD)
