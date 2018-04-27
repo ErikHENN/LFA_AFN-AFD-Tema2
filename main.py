@@ -40,21 +40,26 @@ def citire_automat(AFN):
         AFN.adauga_nod(N)
     AFN.nr_noduri = len(AFN.lista_noduri)
 
-
+'''
+@list - reprezinta lista de transformat in string
+@return - stringul provenit din concatenarea elementelor listei
+'''
 def listToString(list):
     string = ''.join(list)
     return string
-def listeazaStariFinale(AFN = Automat):
-    lista_stari_finale = []
-    for i in AFN.lista_noduri:
-        if AFN.lista_noduri[i].stare is 'f':
-            lista_stari_finale.append(i)
-    return lista_stari_finale
 
+'''
+@lista1, lista2 - Listele de reunit
+@return - lista provenita din reuniunea lor
+'''
 def reunesteListe(lista1, lista2):
     return list(set().union(lista1, lista2))
 
-
+'''
+@litera - Litera pentru care se creeaza lista
+@nod - Nodul pentru care se creeaza lista
+@return - Returnez lista de noduri la care se ajunge cu litera
+'''
 def listaNoduriPeLitera(litera, nod = Nod):
     lista = []
     indexNod = 0
@@ -64,7 +69,31 @@ def listaNoduriPeLitera(litera, nod = Nod):
         indexNod = indexNod + 1
     return lista
 
+'''
+@AFN - Reprezinta AFN-ul pentru care creez automatul. 
+Ii setez default value ca fiind un obiect al clasei automat deoarece vreau sa-l fortez sa foloseasca acest tip de date
 
+Creez lista de noduri (retiune ca string) ale automatului. Pe baza acestei liste creez DataFrame-ul PANDAS
+avand ca index de linie lista de noduri (0,1,2,01,012,etc.) si ca index de coloana cate o litera din alfabetul automatei. 
+De asemenea pe coloane adaug si coloana '@' ce reprezinta faptul ca nodul a fost sau nu vizitat si procesat.
+
+Dupa ce imi generez structura tabelului, completez prima parte cu nodurile simple ale AFN-ului, punand pe pozitia
+(litera, nod) din tabel, reprezentat in format  (coloana, linie), lista de noduri in care se poate ajunge din nodul @nod
+cu litera @litera.
+
+Dupa ce am generat prima parte a tabelului, marchez toate noduri ca fiind nevizitate, adaugand FALSE pe coloana '@'
+
+Mai departe generez nodurile combinate parcurgand progresiv, toate nodurile pentru fiecare litera, 
+si creez linie noua pentru noua combinatie de tranzitii rezultata din reuniunea elementelor
+functiei tranzitiei curente cu litera curenta.
+
+
+In final parcurg din nou tabelul si il completez similar procedeului de mai sus atunci cand gasesc o valoare 'False' 
+in dreptul unei litere. Este nevoie sa ma intorc deoarece, in timp ce generez tranzitii noi pentru litera 'b' spre exemplu
+acestea vor apara si pentru litera 'a' (valoare in tabel fiind initializata prin False) la care nu ma 
+voi intoarce prin generarea tuturor tranzitiilor noi din AFD.
+
+'''
 def creeazaTabelAutomat(AFN = Automat):
     global lista_noduri
     lista_noduri = []
@@ -104,6 +133,8 @@ def creeazaTabelAutomat(AFN = Automat):
                     table.loc[eticheta_tranzitie_noua] = False
                 table.loc[eticheta_tranzitie_noua][litera] = tranzitie_noua
                 table['@'][nod] = True
+
+
     #Verific si completez golurile tabelului in caz ca exista
     for litera in list(AFN.alfabet):
         for nod in lista_noduri:
@@ -114,7 +145,11 @@ def creeazaTabelAutomat(AFN = Automat):
                 table.loc[nod][litera] = tranzitie_noua
 
     return table
-
+'''
+@AFN - AFN-ul de transformat
+@AFD - AFD-ul rezultat
+Functia interpreteaza tabelul si il transpune, creand AFD-ul in formatul definit la citire
+'''
 def conversie(AFN = Automat, AFD = Automat):
     global lista_noduri
     table = creeazaTabelAutomat(AFN)
@@ -148,6 +183,14 @@ def conversie(AFN = Automat, AFD = Automat):
         AFD.adauga_nod(N)
     print (table)
 
+'''
+Afisez AFD-ul nou dupa urmatorul model:
+- Eticheta nod
+- Stare nod
+- Numar de legaturi (muchii) ale nodului
+- Legaturile automatului in format (nod_de_legatura, litera_acceptata_pe_legatura)
+- Despart fiecare nod prin "------------" pentru claritate la citirea rezultatului
+'''
 def afisare(AFD = Automat):
     nrn = AFD.nr_noduri
     for i in range(int(nrn)):
@@ -158,16 +201,15 @@ def afisare(AFD = Automat):
         print ("Numar de muchii nod: " + str(nrm))
         for j in range(int(nrm)):
             # leg.append = "ID nod cu care se leaga nodul i"
-            print(AFD.lista_noduri[i].Muchie.legatura[j])
-            # lit.append="Litera acceptata pe legatura [i, leg[j]]"
-            print(AFD.lista_noduri[i].Muchie.litera[j])
+            print("(" + AFD.lista_noduri[i].Muchie.legatura[j] + ", " + AFD.lista_noduri[i].Muchie.litera[j] + ")")
+        print("------------")
 
 '''
 # Functia main
-# 1) Deschid fisierul afd.in
+# 1) Deschid fisierul afn.in
 # 2) Apelez functia de citire automat
-# 3) Stochez cuvantul de verificat
-# 4) Apelez functia de verificare cuvant 
+# 3) Convertesc AFN-ul in AFD
+# 4) Apelez functia de afisare
 '''
 
 
