@@ -51,6 +51,7 @@ def listaNoduriPeLitera(litera, nod = Nod):
 
 
 def creeazaTabelAutomat(AFN = Automat):
+    global lista_noduri
     lista_noduri = []
     for i in range(AFN.nr_noduri):
         lista_noduri.append(str(i))
@@ -99,8 +100,34 @@ def creeazaTabelAutomat(AFN = Automat):
 
     return table
 
+def conversie(AFN = Automat, AFD = Automat):
+    global lista_noduri
+    table = creeazaTabelAutomat(AFN)
+    AFD.nr_noduri = len(table.index)
+    AFD.alfabet = AFN.alfabet
+
+    for i in AFD.nr_noduri:
+        legatura = []
+        litera_acceptata = []
+        eticheta = i
+        stare = "intermediara"#Inainte de marcarea starilor initiala si finala, marchez tot ca fiind intermediar
+
+        #Pentru nodul i calculez lungimea fiecarei liste de pe coloanele literelor
+        for litera in list(AFD.alfabet):
+            nr_muchii = nr_muchii + len(table[litera][i])
+
+        for j in range(int(nr_muchii)):
+            for litera in list(AFD.alfabet):
+                legatura.append(listToString(table[litera][i]))
+                litera_acceptata.append(litera)
+        M = Muchie(legatura, litera_acceptata)
+        N = Nod(eticheta, stare, nr_muchii, M)
+        AFD.adauga_nod(N)
 
 
+def listToString(list):
+    string = ''.join(list)
+    return string
 def listeazaStariFinale(AFN = Automat):
     lista_stari_finale = []
     for i in AFN.lista_noduri:
