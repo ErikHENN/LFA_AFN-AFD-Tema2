@@ -40,6 +40,21 @@ def citire_automat(AFN):
         AFN.adauga_nod(N)
     AFN.nr_noduri = len(AFN.lista_noduri)
 
+
+def listToString(list):
+    string = ''.join(list)
+    return string
+def listeazaStariFinale(AFN = Automat):
+    lista_stari_finale = []
+    for i in AFN.lista_noduri:
+        if AFN.lista_noduri[i].stare is 'f':
+            lista_stari_finale.append(i)
+    return lista_stari_finale
+
+def reunesteListe(lista1, lista2):
+    return list(set().union(lista1, lista2))
+
+
 def listaNoduriPeLitera(litera, nod = Nod):
     lista = []
     indexNod = 0
@@ -106,15 +121,23 @@ def conversie(AFN = Automat, AFD = Automat):
     AFD.nr_noduri = len(table.index)
     AFD.alfabet = AFN.alfabet
 
-    for i in AFD.nr_noduri:
+    for i in table.index:
         legatura = []
         litera_acceptata = []
         eticheta = i
-        stare = "intermediara"#Inainte de marcarea starilor initiala si finala, marchez tot ca fiind intermediar
+        print("ET = " + eticheta)
+        nr_muchii = 0
 
         #Pentru nodul i calculez lungimea fiecarei liste de pe coloanele literelor
         for litera in list(AFD.alfabet):
             nr_muchii = nr_muchii + len(table[litera][i])
+            for j in table[litera][i]:
+                if AFN.lista_noduri[int(j)].stare is 'f':
+                    stare = 'f'
+                elif AFN.lista_noduri[int(j)].stare == 'initiala':
+                    stare = 'initiala'
+                else:
+                    stare = 'intermediara'
 
         for j in range(int(nr_muchii)):
             for litera in list(AFD.alfabet):
@@ -123,24 +146,21 @@ def conversie(AFN = Automat, AFD = Automat):
         M = Muchie(legatura, litera_acceptata)
         N = Nod(eticheta, stare, nr_muchii, M)
         AFD.adauga_nod(N)
+    print (table)
 
-
-def listToString(list):
-    string = ''.join(list)
-    return string
-def listeazaStariFinale(AFN = Automat):
-    lista_stari_finale = []
-    for i in AFN.lista_noduri:
-        if AFN.lista_noduri[i].stare is 'f':
-            lista_stari_finale.append(i)
-    return lista_stari_finale
-
-def reunesteListe(lista1, lista2):
-    return list(set().union(lista1, lista2))
-
-def creeazaTranzitiiNoi(AFN = Automat):
-    lista = []
-
+def afisare(AFD = Automat):
+    nrn = AFD.nr_noduri
+    for i in range(int(nrn)):
+        print ("Eticheta nod: " + str(AFD.lista_noduri[i].eticheta))
+        print("Stare nod: " + str(AFD.lista_noduri[i].stare))
+        # nrm =  ("Nr. de legaturi ale nodului i"
+        nrm = AFD.lista_noduri[i].nrm
+        print ("Numar de muchii nod: " + str(nrm))
+        for j in range(int(nrm)):
+            # leg.append = "ID nod cu care se leaga nodul i"
+            print(AFD.lista_noduri[i].Muchie.legatura[j])
+            # lit.append="Litera acceptata pe legatura [i, leg[j]]"
+            print(AFD.lista_noduri[i].Muchie.litera[j])
 
 '''
 # Functia main
@@ -154,5 +174,7 @@ def creeazaTranzitiiNoi(AFN = Automat):
 if __name__ == "__main__":
     file = open("afn.in", "r")
     AFN = Automat("ab")
-    AFD = []
+    AFD = Automat("ab")
     citire_automat(AFN)
+    conversie(AFN, AFD)
+    afisare(AFD)
